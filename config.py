@@ -14,7 +14,6 @@ class Config(object):
 	DEBUG = True
 	SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 	SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-	SQLALCHEMY_RECORD_QUERIES = True
 	# FLASK_ADMIN = '418836702@qq.com'
 	FLASK_ADMIN = os.environ.get('FLASK_ADMIN')
 	@staticmethod
