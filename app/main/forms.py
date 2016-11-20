@@ -1,4 +1,7 @@
 #encoding:utf8
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 from flask_wtf import Form
 from wtforms import StringField, TextAreaField, BooleanField, SelectField,\

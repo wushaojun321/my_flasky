@@ -1,4 +1,7 @@
 #encoding:utf8
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 from werkzeug.security import generate_password_hash,check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import db
