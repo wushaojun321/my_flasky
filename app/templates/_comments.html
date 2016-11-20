@@ -1,0 +1,38 @@
+<ul class="comments">
+    {% for comment in comments %}
+    <li class="comment">
+        <div class="comment-thumbnail" style="float:left; display:inline;">
+            <a href="{{ url_for('.user', username=comment.author.username) }}">
+                <img class="img-rounded profile-thumbnail" src="{{ comment.author.gravatar(size=40) }}">
+            </a>
+        </div>
+        <br>
+        <div class="post-author" style="float:left;font-weight:bold;"><a href="{{ url_for('.user', username=comment.author.username) }}">{{ comment.author.username }}:</a>
+        </div>
+        <div class="comment-body" style="float:left;">
+            {% if comment.disabled %}
+            <p><i>这条评论被和谐了！</i></p>
+            {% endif %}
+            {% if moderate or not comment.disabled %}
+                {% if comment.body_html %}
+                    {{ comment.body_html | safe }}
+                {% else %}
+                    {{ comment.body }}
+                {% endif %}
+            {% endif %}
+        </div>
+        {% if moderate %}
+            <br>
+            {% if comment.disabled %}
+            <a class="btn btn-default btn-xs" href="{{ url_for('.moderate_enable', id=comment.id, page=page) }}">Enable</a>
+            {% else %}
+            <a class="btn btn-danger btn-xs" href="{{ url_for('.moderate_disable', id=comment.id, page=page) }}">Disable</a>
+            {% endif %}
+        {% endif %}
+        <div class="post-footer" style="float: right;">
+            <div class="comment-date" style="float: right;">{{ moment(comment.timestamp).fromNow(refresh=True) }}</div>
+        </div>
+    </li>
+    <br><br>
+    {% endfor %}
+</ul>
