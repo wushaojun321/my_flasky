@@ -12,8 +12,9 @@ class Config(object):
 	MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 	SECRET_KEY = 'python123'
 	DEBUG = True
-	SQLALCHEMY_DATABASE_URI = os.environ('DATABASE_URL')
+	SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 	SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    SQLALCHEMY_RECORD_QUERIES = True
 	# FLASK_ADMIN = '418836702@qq.com'
 	FLASK_ADMIN = os.environ.get('FLASK_ADMIN')
 	@staticmethod
