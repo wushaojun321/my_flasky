@@ -99,6 +99,7 @@ def change_password():
             #修改密码
             db.session.add(current_user)
             #加入数据库的session，这里不需要.commit()，在配置文件中已经配置了自动保存
+            db.session.commit()
             flash('Your password has been updated.')
             return redirect(url_for('main.index'))
         else:

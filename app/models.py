@@ -120,10 +120,12 @@ class User(db.Model,UserMixin):
         if not self.is_following(user):
             f = Follow(follower=self, followed=user)
             db.session.add(f)
+            db.session.commit()
     def unfollow(self, user):
         f = self.followed.filter_by(followed_id=user.id).first()
         if f:
             db.session.delete(f)
+            db.session.commit()
     def is_following(self,user):
         return self.followed.filter_by(followed_id=user.id).first() is not None
     def is_followed_by(self, user):
@@ -140,6 +142,7 @@ class User(db.Model,UserMixin):
         #刷新用户的最后访问时间
         self.last_seen = datetime.utcnow()
         db.session.add(self)
+        db.session.commit()
 
     def can(self,permissions):
         #这个方法用来传入一个权限来核实用户是否有这个权限,返回bool值
@@ -167,6 +170,7 @@ class User(db.Model,UserMixin):
             return False
         self.confirmed = True #解的码和已经登录的账号ID相等时操作数据库改变User.confirmed的值为True
         db.session.add(self)
+        db.session.commit()
         return True #激活成功返回True
     def generate_reset_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
@@ -182,6 +186,7 @@ class User(db.Model,UserMixin):
             return False
         self.password = new_password
         db.session.add(self)
+        db.session.commit()
         return True
     def generate_email_change_token(self, new_email, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
@@ -203,6 +208,7 @@ class User(db.Model,UserMixin):
         self.email = new_email
         self.avatar_hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
         db.session.add(self)
+        db.session.commit()
         return True
 
     @property
