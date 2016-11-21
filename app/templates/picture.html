@@ -1,0 +1,18 @@
+{% import "_macros.html" as macros %}
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %}欢迎来到武少军的小屋{% endblock %}
+{% block page_content %}
+{% for i in pic_url %}
+<div style="width:800px;margin:auto">
+	<a target="_blank" href="{{ i.url }}}">
+	  <img src="{{ i.url }}" alt="Paris" width="800">
+	</a><br>
+</div>
+{% endfor %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, '.picture', fragment='#comments', id=pic_url[0].id) }}
+</div>
+{% endblock %}

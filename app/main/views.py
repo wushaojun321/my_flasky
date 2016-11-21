@@ -7,7 +7,7 @@ from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm,EditProfileAdminForm,PostForm, CommentForm
 from .. import db
-from ..models import Role, User, Post,Permission, Comment
+from ..models import Role, User, Post,Permission, Comment, Picture
 from ..decorators import admin_required,permission_required
 
 @main.route('/', methods=['POST','GET'])
@@ -31,6 +31,16 @@ def index():
                  page,per_page=20,error_out=False)
     posts = pagination.items
     return render_template('index.html', form=form, posts=posts,pagination=pagination,show_followed=show_followed)
+
+@main.route('/picture')
+def picture():
+    Picture.updata_pic()
+    query = Picture.query
+    page = request.args.get('page', 1, type=int)
+    pagination = query.order_by(Picture.timestamp.desc()).paginate(
+                page,per_page=3,error_out=False)
+    pic_url = pagination.items
+    return render_template('picture.html', pic_url=pic_url, pagination=pagination)
 
 @main.route('/user/<username>')
 def user(username):

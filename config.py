@@ -12,6 +12,7 @@ class Config(object):
 	MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 	SECRET_KEY = 'python123'
 	DEBUG = True
+	# SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
 	SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 	SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 	# FLASK_ADMIN = '418836702@qq.com'

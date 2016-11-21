@@ -12,6 +12,8 @@ from datetime import datetime
 import hashlib
 import bleach
 from markdown import markdown
+import re
+import requests
 
 
 
@@ -299,6 +301,57 @@ class Post(db.Model):
                      author=u)
             db.session.add(p)
             db.session.commit()
+
+class Get_Picture_Url(object):
+    #获取美女图片
+    def get_page(self):
+        r = requests.get('http://jandan.net/ooxx')
+        html = r.text.encode('utf-8')
+        re_rule_page = r'<a href="http://jandan.net/ooxx/page-(.+?)#comment-'
+        page = re.findall(re_rule_page, html)
+        if len(page) != 0:
+            if page[0].isdigit():
+                i = int(page[0])
+                L = [str(i), str(i-1), str(i-2)]
+                return L    
+        return False
+
+    def get_pic_url(self):
+        page = self.get_page()
+        if page:
+            L = []
+            re_rule = r'<p><a href="(.+?\.jpg)" target="_blank" class="view_img_link">\[查看原图\]'
+            for i in page:
+                url = 'http://jandan.net/ooxx/page-'+i
+                r = requests.get(url)
+                r = r.text.encode('utf-8')
+                pic_url = re.findall(re_rule, r)
+                L = L + pic_url
+            return L
+        return False
+
+class Picture(db.Model):
+    __tablename__ = 'pictures'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    url = db.Column(db.String(128))
+
+    @staticmethod
+    def updata_pic():
+        p = Get_Picture_Url()
+        pic = p.get_pic_url()
+        if pic: 
+            origin_pic = Picture.query.all()
+            for i in pic:
+                power = False
+                for j in origin_pic:
+                    if i == j.url:
+                        power = True
+                if not power:
+                    new_pic = Picture(url=i)  
+                    db.session.add(new_pic)
+            db.session.commit()
+
 
 
 

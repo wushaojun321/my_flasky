@@ -1,11 +1,11 @@
 Dear {{ user.username }},
 
-To confirm your new email address click on the following link:
+这是重置邮箱地址的邮件::
 
 {{ url_for('auth.change_email', token=token, _external=True) }}
 
 Sincerely,
 
-The Flasky Team
+来自武少军的小屋
 
-Note: replies to this email address are not monitored.
+注意：不监控对此电子邮件地址的回复.
