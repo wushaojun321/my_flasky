@@ -12,6 +12,7 @@ from ..decorators import admin_required,permission_required
 
 @main.route('/', methods=['POST','GET'])
 def index():
+    #主页路由，显示用户关注的用户心情或者全部用户心情，显示发表心情表单并处理用户发表的心情
     form = PostForm()
     if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():#记得加括号
         post = Post(body=form.body.data,
@@ -34,16 +35,18 @@ def index():
 
 @main.route('/picture')
 def picture():
+    #每日一撸路由，将图片分页显示
     Picture.updata_pic()
     query = Picture.query
     page = request.args.get('page', 1, type=int)
     pagination = query.order_by(Picture.timestamp.desc()).paginate(
-                page,per_page=3,error_out=False)
+                page,per_page=5,error_out=False)
     pic_url = pagination.items
     return render_template('picture.html', pic_url=pic_url, pagination=pagination)
 
 @main.route('/user/<username>')
 def user(username):
+    #用户信息路由
     user = User.query.filter_by(username=username).first()
     if user is None:
         abort(404)
@@ -53,6 +56,7 @@ def user(username):
 @main.route('/edit-profile',methods=['POST','GET'])
 @login_required
 def edit_profile():
+    #修改个人信息路由
     form = EditProfileForm()
     if form.validate_on_submit():
         current_user.name = form.name.data
@@ -71,7 +75,7 @@ def edit_profile():
 @login_required
 @permission_required(Permission.FOLLOW)
 def follow(username):
-    '关注'
+    #关注路由
     user = User.query.filter_by(username=username).first()
     if user is None:
         flash('Invalid user.')
@@ -87,6 +91,7 @@ def follow(username):
 @login_required
 @permission_required(Permission.FOLLOW)
 def unfollow(username):
+    #取消关注路由
     user = User.query.filter_by(username=username).first()
     if user is None:
         flash('Invalid user.')
@@ -98,16 +103,16 @@ def unfollow(username):
     flash('You are not following %s anymore.' % username)
     return redirect(url_for('.user', username=username))
 
-
 @main.route('/followers/<username>')
 def followers(username):
+    #显示关注者列表路由
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Invalid user.')
+        flash('此用户不存在！')
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     pagination = user.followers.paginate(
-        page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
+        page, per_page=5,
         error_out=False)
     follows = [{'user': item.follower, 'timestamp': item.timestamp}
                for item in pagination.items]
@@ -115,16 +120,16 @@ def followers(username):
                            endpoint='.followers', pagination=pagination,
                            follows=follows)
 
-
 @main.route('/followed-by/<username>')
 def followed_by(username):
+    #显示粉丝列表路由
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Invalid user.')
+        flash('此用户不存在！')
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     pagination = user.followed.paginate(
-        page, per_page=10,
+        page, per_page=5,
         error_out=False)
     follows = [{'user': item.followed, 'timestamp': item.timestamp}
                for item in pagination.items]
@@ -136,6 +141,7 @@ def followed_by(username):
 @login_required
 @admin_required
 def edit_profile_admin(id):
+    #管路员修改用户信息路由
     user = User.query.get_or_404(id)
     form = EditProfileAdminForm(user=user)
     if form.validate_on_submit():
@@ -162,6 +168,7 @@ def edit_profile_admin(id):
 @main.route('/all')
 @login_required
 def show_all():
+    #显示全部人心情路由
     resp = make_response(redirect(url_for('.index')))
     resp.set_cookie('show_followed', '', max_age=30*24*60*60)
     return resp
@@ -170,12 +177,14 @@ def show_all():
 @main.route('/followed')
 @login_required
 def show_followed():
+    #显示关注人心情的路由
     resp = make_response(redirect(url_for('.index')))
     resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
     return resp
 
 @main.route('/post/<int:id>', methods=['GET', 'POST'])
 def post(id):
+    #显示心情和此心情评论并接受评论的路由
     post = Post.query.get_or_404(id)
     form = CommentForm()
     if form.validate_on_submit():
@@ -197,6 +206,7 @@ def post(id):
 @login_required
 @permission_required(Permission.MODERATE_COMMENTS)
 def moderate():
+    #评论管理
     page = request.args.get('page', 1, type=int)
     pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
                     page, per_page=20, error_out=False)
@@ -208,6 +218,7 @@ def moderate():
 @login_required
 @permission_required(Permission.MODERATE_COMMENTS)
 def moderate_enable(id):
+    #解封评论路由
     comment = Comment.query.get_or_404(id)
     comment.disabled = False
     db.session.add(comment)
@@ -220,6 +231,7 @@ def moderate_enable(id):
 @login_required
 @permission_required(Permission.MODERATE_COMMENTS)
 def moderate_disable(id):
+    #封锁评论路由
     comment = Comment.query.get_or_404(id)
     comment.disabled = True
     db.session.add(comment)
@@ -227,4 +239,19 @@ def moderate_disable(id):
     return redirect(url_for('.moderate',
                             page=request.args.get('page', 1, type=int)))
 
+@main.app_errorhandler(404)
+def page_not_find(e):
+    return render_template('404.html'), 404
+
+@main.app_errorhandler(403)
+def page_not_find(e):
+    return render_template('403.html'), 403
+
+@main.app_errorhandler(500)
+def page_not_find(e):
+    return render_template('500.html'), 500
+
+@main.app_errorhandler(401)
+def page_not_find(e):
+    return render_template('401.html'), 401
 

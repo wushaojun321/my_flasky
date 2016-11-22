@@ -12,6 +12,7 @@ from ..models import Role, User
 
 
 class EditProfileForm(Form):
+    #个人信息表单
 	name = StringField('真名',validators=[Length(0,64)])
 	location = StringField('来自',validators=[Length(0,64)])
 	about_me = TextAreaField('关于我')
@@ -54,5 +55,6 @@ class PostForm(Form):
     submit = SubmitField('提交')
 
 class CommentForm(Form):
+    #评论表单
     body = StringField('',validators=[Required()])
     submit = SubmitField('提交')

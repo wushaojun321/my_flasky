@@ -18,6 +18,7 @@ import requests
 
 
 class Permission():
+    #权限分类
     FOLLOW = 0x01
     COMMENT = 0x02
     WRITE_ARTICLES = 0x04
@@ -25,6 +26,7 @@ class Permission():
     ADMINISTER = 0x80
 
 class Comment(db.Model):
+    #评论数据库模型
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
@@ -40,7 +42,6 @@ class Comment(db.Model):
                                         tags=allowed_tag, strip=True))
 db.event.listen(Comment.body, 'set', Comment.on_change_body)
 
-
 class Role(db.Model):
     #定义Role的数据库模型
     __tablename__ = 'roles'
@@ -54,6 +55,7 @@ class Role(db.Model):
         return '<Role %r>' % self.name
     @staticmethod
     def insert_role():
+        #初始化ROLE表格的静态方法
         roles = {
             'User':(Permission.FOLLOW|
                     Permission.COMMENT|
@@ -74,7 +76,7 @@ class Role(db.Model):
         db.session.commit()
 
 class Follow(db.Model):
-    '''创建多对多关系，实现关注功能'''
+    #创建多对多关系，实现关注功能
     __tablename__ = 'follows'
     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),primary_key=True)
     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),primary_key=True)
@@ -121,7 +123,7 @@ class User(db.Model,UserMixin):
             self.avatar_hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
         self.follow(self)
     def follow(self, user):
-        '关注别人'
+        #关注别人
         if not self.is_following(user):
             f = Follow(follower=self, followed=user)
             db.session.add(f)
@@ -137,7 +139,7 @@ class User(db.Model,UserMixin):
         return self.followers.filter_by(follower_id=user.id).first() is not None
 
     def gravatar(self, size=100, default='identicon', rating='g'):
-        '生成头像链接'
+        #生成头像链接
         url = 'https://www.gravatar.com/avatar'
         hash = self.avatar_hash or hashlib.md5(self.email.encode('utf-8')).hexdigest()
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
@@ -255,10 +257,10 @@ class User(db.Model,UserMixin):
                 db.session.rollback()
     @property
     def followed_posts(self):
-        '这里不能用被注释的，因为它返回的是Query，我们需要的是BaseQuery，前者是后者的父类'
-        # return db.session.query(Post).select_from(Follow).\
-        #         filter_by(follower_id=self.id).\
-        #         join(Post, Follow.followed_id==Post.author_id)
+        #这里不能用被注释的，因为它返回的是Query，我们需要的是BaseQuery，前者是后者的父类
+        ''' return db.session.query(Post).select_from(Follow).\
+                filter_by(follower_id=self.id).\
+                join(Post, Follow.followed_id==Post.author_id)'''
         return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
             .filter(Follow.follower_id == self.id)
 
@@ -289,9 +291,9 @@ class Post(db.Model):
 
     @staticmethod
     def generate_fake(count=100):
+        #使用forgery_py模块插入100条心情
         from random import seed, randint
         import forgery_py
-
         seed()
         user_count = User.query.count()
         for i in range(count):
@@ -338,6 +340,7 @@ class Picture(db.Model):
 
     @staticmethod
     def updata_pic():
+        #即时爬取图片并在有新图片时写入数据库
         p = Get_Picture_Url()
         pic = p.get_pic_url()
         if pic: 
